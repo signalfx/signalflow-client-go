@@ -1,6 +1,5 @@
 # SignalFlow Go Client
 
-<!-- TODO: Uncomment before making a public release.
 [![Go Reference](https://pkg.go.dev/badge/github.com/signalfx/signalflow-client-go/signalflow.svg)](https://pkg.go.dev/github.com/signalfx/signalflow-client-go/signalflow)
 
 [![go.mod](https://img.shields.io/github/go-mod/go-version/signalfx/signalflow-client-go)](go.mod)
@@ -8,7 +7,6 @@
 [![LICENSE](https://img.shields.io/github/license/signalfx/signalflow-client-go)](LICENSE)
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/signalfx/signalflow-client-go/ci.yml?branch=main)](https://github.com/signalfx/signalflow-client-go/actions?query=branch%3Amain)
--->
 
 This is a client for [SignalFlow](https://dev.splunk.com/observability/docs/signalflow)
 that lets you stream and analyze metric data in real-time for your organization.
