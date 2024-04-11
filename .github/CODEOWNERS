@@ -1,0 +1,14 @@
+* @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
+
+CODEOWNERS @signalfx/gdi-go-maintainers
+
+#####################################################
+#
+# Docs reviewers
+#
+#####################################################
+
+*.md @signalfx/gdi-docs @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
+*.rst @signalfx/gdi-docs @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
+docs/ @signalfx/gdi-docs @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
+README* @signalfx/gdi-docs @signalfx/gdi-go-maintainers @signalfx/gdi-go-approvers
