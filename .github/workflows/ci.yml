@@ -7,6 +7,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  goyek:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.2
+      - uses: actions/setup-go@v5.0.0
+        with:
+          go-version: '1.22'
+          check-latest: true
+      - run: ./goyek.sh -v ci
+      # TODO: Uncomment after making the repository public.
+      # - uses: codecov/codecov-action@v4.3.0
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     fail_ci_if_error: true
+      #     file: ./coverage.out
+
   check-links:
     runs-on: ubuntu-22.04
     steps:
