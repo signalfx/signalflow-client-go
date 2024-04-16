@@ -32,7 +32,7 @@ gen: ## go generate
 .PHONY: test
 test: ## go test
 	$(call print-target)
-	$(GO) test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
+	$(GO) test -race ./...
 
 .PHONY: diff
 diff: ## git diff
