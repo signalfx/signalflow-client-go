@@ -17,7 +17,7 @@ $(TOOLS):
 	$(call print-target)
 	mkdir -p $@
 
-$(TOOLS)/%: $(TOOLS) $(TOOLS_MOD_DIR)/go.mod
+$(TOOLS)/%: $(TOOLS_MOD_DIR)/go.mod | $(TOOLS)
 	$(call print-target)
 	cd $(TOOLS_MOD_DIR) && $(GO) build -o $@ $(PACKAGE)
 
