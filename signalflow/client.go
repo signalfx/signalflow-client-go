@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-
 	"github.com/signalfx/signalflow-client-go/signalflow/messages"
 )
 

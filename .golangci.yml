@@ -1,0 +1,60 @@
+run:
+  timeout: 5m
+
+linters-settings:
+  depguard:
+    rules:
+      non-tests:
+        files:
+          - "!$test"
+          - "!**/*test/*.go"
+        deny:
+          - pkg: "testing"
+          - pkg: "github.com/stretchr/testify"
+  govet:
+    disable:
+     - composites
+  gosec:
+    excludes:
+      - G404
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - depguard
+    - dupl
+    - durationcheck
+    - errorlint
+    - errname
+    - exportloopref
+    - forbidigo
+    - gci
+    - goconst
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nilerr
+    - noctx
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - stylecheck
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unparam
+    - wastedassign
+    - whitespace
