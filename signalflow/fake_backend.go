@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -48,6 +49,8 @@ type FakeBackend struct {
 	cancelFuncsByChannel map[string]context.CancelFunc
 	server               *httptest.Server
 	handleIdx            int
+
+	logger *log.Logger
 }
 
 func (f *FakeBackend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +79,7 @@ func (f *FakeBackend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if err != nil {
-				log.Printf("Could not write message: %v", err)
+				f.logger.Printf("Could not write message: %v", err)
 			}
 		}
 	}()
@@ -85,20 +88,20 @@ func (f *FakeBackend) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			if !errors.Is(err, net.ErrClosed) {
-				log.Println("read err:", err)
+				f.logger.Println("read err:", err)
 			}
 			return
 		}
 
 		var in map[string]interface{}
 		if err := json.Unmarshal(message, &in); err != nil {
-			log.Println("error unmarshalling: ", err)
+			f.logger.Println("error unmarshalling: ", err)
 		}
 		f.received = append(f.received, in)
 
 		err = f.handleMessage(ctx, in, textMsgs, binMsgs)
 		if err != nil {
-			log.Printf("Error handling fake backend message, closing connection: %v", err)
+			f.logger.Printf("Error handling fake backend message, closing connection: %v", err)
 			return
 		}
 	}
@@ -161,7 +164,7 @@ func (f *FakeBackend) handleMessage(ctx context.Context, message map[string]inte
 		f.cancelFuncsByHandle[handle] = cancel
 		f.cancelFuncsByChannel[ch] = cancel
 
-		log.Printf("Executing SignalFlow program %s with tsids %v and handle %s", program, programTSIDs, handle)
+		f.logger.Printf("Executing SignalFlow program %s with tsids %v and handle %s", program, programTSIDs, handle)
 		f.runningJobsByProgram[program]++
 
 		var resolutionMs int
@@ -207,14 +210,14 @@ func (f *FakeBackend) handleMessage(ctx context.Context, message map[string]inte
 			if md := f.metadataByTSID[tsid]; md != nil {
 				propJSON, err := json.Marshal(md)
 				if err != nil {
-					log.Printf("Error serializing metadata to json: %v", err)
+					f.logger.Printf("Error serializing metadata to json: %v", err)
 					continue
 				}
 				textMsgs <- fmt.Sprintf(`{"type": "metadata", "tsId": "%s", "channel": "%s", "properties": %s}`, tsid, ch, propJSON)
 			}
 		}
 
-		log.Print("done sending metadata messages")
+		f.logger.Print("done sending metadata messages")
 
 		// Send data periodically until the connection is closed.
 		iterations := 0
@@ -223,7 +226,7 @@ func (f *FakeBackend) handleMessage(ctx context.Context, message map[string]inte
 			for {
 				select {
 				case <-execCtx.Done():
-					log.Printf("sending done")
+					f.logger.Printf("sending done")
 					f.Lock()
 					f.runningJobsByProgram[program]--
 					f.Unlock()
@@ -239,14 +242,14 @@ func (f *FakeBackend) handleMessage(ctx context.Context, message map[string]inte
 					f.Unlock()
 					metricTime := startMs + uint64(iterations*resolutionMs)
 					if stopMs != 0 && metricTime > stopMs {
-						log.Printf("sending channel end")
+						f.logger.Printf("sending channel end")
 						// tell the client the computation is complete
 						textMsgs <- fmt.Sprintf(`{"type": "control-message", "channel": "%s", "event": "END_OF_CHANNEL", "handle": "%s"}`, ch, handle)
 						return
 					}
-					log.Printf("sending data message")
+					f.logger.Printf("sending data message")
 					binMsgs <- makeDataMessage(ch, valsWithTSID, metricTime)
-					log.Printf("done sending data message")
+					f.logger.Printf("done sending data message")
 					iterations++
 				}
 			}
@@ -373,9 +376,17 @@ func (f *FakeBackend) RunningJobsForProgram(program string) int {
 	return f.runningJobsByProgram[program]
 }
 
+// SetLogger sets the internal logger.
+func (f *FakeBackend) SetLogger(logger *log.Logger) {
+	f.Lock()
+	f.logger = logger
+	f.Unlock()
+}
+
 func NewRunningFakeBackend() *FakeBackend {
 	f := &FakeBackend{
 		AccessToken: "abcd",
+		logger:      log.New(io.Discard, "", 0),
 	}
 	f.Start()
 	return f

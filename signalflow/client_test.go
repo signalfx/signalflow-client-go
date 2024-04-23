@@ -3,11 +3,8 @@ package signalflow
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
-	"os"
 	"runtime"
-	"runtime/pprof"
 	"sync"
 	"testing"
 	"time"
@@ -197,7 +194,7 @@ func TestReconnect(t *testing.T) {
 	resolution, _ = comp.Resolution(context.Background())
 	require.Equal(t, 1*time.Second, resolution)
 
-	log.Printf("%v", fakeBackend.received)
+	t.Log(fakeBackend.received)
 	require.Equal(t, []map[string]interface{}{
 		{
 			"type":  "authenticate",
@@ -322,11 +319,6 @@ func TestReconnectAfterBackendDown(t *testing.T) {
 }
 
 func TestFailedConnGoroutineShutdown(t *testing.T) {
-	defer func() {
-		time.Sleep(2 * time.Second)
-		pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
-	}()
-
 	fakeBackend := NewRunningFakeBackend()
 	fakeBackend.Stop()
 
