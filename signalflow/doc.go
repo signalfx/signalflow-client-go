@@ -1,3 +1,6 @@
+// Copyright Splunk Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 /*
 Package signalflow contains a SignalFx SignalFlow client,
 which can be used to execute analytics jobs against the SignalFx backend.

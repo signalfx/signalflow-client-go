@@ -11,6 +11,13 @@ linters-settings:
         deny:
           - pkg: "testing"
           - pkg: "github.com/stretchr/testify"
+  goheader:
+    values:
+      const:
+        COMPANY: Splunk Inc.
+    template: |-
+      Copyright {{ COMPANY }}
+      SPDX-License-Identifier: Apache-2.0
   govet:
     disable:
      - composites
