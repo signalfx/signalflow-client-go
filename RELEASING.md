@@ -1,5 +1,15 @@
 # Release Process
 
+## Pre-release
+
+Create a pull request named `Release v<version>` to update the [`CHANGELOG.md`](CHANGELOG.md):
+
+- Add a new header to representing the new release.
+- Consider adding a description for the new release.
+  Especially if it adds new features or introduces breaking changes.
+
+## Release  
+
 1. Add and push a signed tag:
 
    ```sh
