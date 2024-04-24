@@ -339,6 +339,7 @@ func (c *Computation) shutdown() {
 	close(c.dataChBuffer)
 	close(c.expirationChBuffer)
 	close(c.infoChBuffer)
+	close(c.eventChBuffer)
 }
 
 var ErrMetadataTimeout = errors.New("metadata value did not come in time")
