@@ -10,5 +10,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
-- Close the channel returned by `Computation.Events` when the computation finishes.
+- Close the channel returned by `Computation.Events` when the computation finishes and fix a goroutine leak.
   [(#15)](https://github.com/signalfx/signalflow-client-go/pull/15)
