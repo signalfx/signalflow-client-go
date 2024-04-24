@@ -18,14 +18,14 @@ you have to replace `github.com/signalfx/signalfx-go/signalflow/v2` with
 ### Added
 
 - Add `SetLogger` method `FakeBackend` to allow setting an internal logger.
-  [(#12)](https://github.com/signalfx/signalflow-client-go/pull/12)
+  ([#12](https://github.com/signalfx/signalflow-client-go/pull/12))
 
 ### Changed
 
 - `FakeBackend` no longer emits internal logs using global `log`.
-  [(#12)](https://github.com/signalfx/signalflow-client-go/pull/12)
+  ([#12](https://github.com/signalfx/signalflow-client-go/pull/12))
 
 ### Fixed
 
 - Fix a goroutine leak and close the channel returned by `Computation.Events` when the computation finishes.
-  [(#15)](https://github.com/signalfx/signalflow-client-go/pull/15)
+  ([#15](https://github.com/signalfx/signalflow-client-go/pull/15))
