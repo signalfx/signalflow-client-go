@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/signalfx/signalflow-client-go/signalflow/messages"
+	"github.com/signalfx/signalflow-client-go/v2/signalflow/messages"
 	"github.com/signalfx/signalfx-go/idtool"
 	"github.com/stretchr/testify/require"
 )

@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/signalfx/signalflow-client-go/signalflow"
+	"github.com/signalfx/signalflow-client-go/v2/signalflow"
 )
 
 func Example() {
