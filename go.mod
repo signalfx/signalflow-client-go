@@ -1,4 +1,4 @@
-module github.com/signalfx/signalflow-client-go
+module github.com/signalfx/signalflow-client-go/v2
 
 go 1.21
 
