@@ -1,6 +1,6 @@
 # SignalFlow Go Client
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/signalfx/signalflow-client-go/signalflow.svg)](https://pkg.go.dev/github.com/signalfx/signalflow-client-go/signalflow)
+[![Go Reference](https://pkg.go.dev/badge/github.com/signalfx/signalflow-client-go/v2/signalflow.svg)](https://pkg.go.dev/github.com/signalfx/signalflow-client-go/v2/signalflow)
 [![go.mod](https://img.shields.io/github/go-mod/go-version/signalfx/signalflow-client-go)](go.mod)
 
 [![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog-%23E05735)](CHANGELOG.md)
