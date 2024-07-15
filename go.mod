@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/gorilla/websocket v1.5.3
-	github.com/signalfx/signalfx-go v1.37.0
+	github.com/signalfx/signalfx-go v1.39.0
 	github.com/stretchr/testify v1.9.0
 )
 
