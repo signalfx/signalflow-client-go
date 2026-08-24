@@ -243,7 +243,7 @@ func (f *FakeBackend) handleMessage(ctx context.Context, message map[string]inte
 						}
 					}
 					f.Unlock()
-					metricTime := startMs + uint64(iterations*resolutionMs)
+					metricTime := startMs + uint64(iterations*resolutionMs) //nolint:gosec // Test data cannot overflow uint64.
 					if stopMs != 0 && metricTime > stopMs {
 						f.logger.Printf("sending channel end")
 						// tell the client the computation is complete
@@ -276,7 +276,7 @@ func makeDataMessage(channel string, valsWithTSID []tsidVal, now uint64) []byte 
 
 	dataHeader := messages.DataMessageHeader{
 		TimestampMillis: now,
-		ElementCount:    uint32(len(valsWithTSID)),
+		ElementCount:    uint32(len(valsWithTSID)), //nolint:gosec // A test payload cannot contain more than 2^32 elements.
 	}
 	binary.Write(w, binary.BigEndian, &dataHeader)
 
@@ -316,7 +316,8 @@ func (f *FakeBackend) Stop() {
 }
 
 func (f *FakeBackend) Restart() {
-	l, err := net.Listen("tcp", f.server.Listener.Addr().String())
+	var lc net.ListenConfig
+	l, err := lc.Listen(context.Background(), "tcp", f.server.Listener.Addr().String())
 	if err != nil {
 		panic("Could not relisten: " + err.Error())
 	}

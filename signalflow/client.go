@@ -215,6 +215,10 @@ func (c *Client) run(ctx context.Context) {
 }
 
 func (c *Client) sendMessage(ctx context.Context, message interface{}) error {
+	return c.sendMessageWithBeforeWrite(ctx, message, nil)
+}
+
+func (c *Client) sendMessageWithBeforeWrite(ctx context.Context, message interface{}, beforeWrite func()) error {
 	msgBytes, err := c.serializeMessage(message)
 	if err != nil {
 		return err
@@ -223,8 +227,9 @@ func (c *Client) sendMessage(ctx context.Context, message interface{}) error {
 	resultCh := make(chan error, 1)
 	select {
 	case c.outgoingTextMsgs <- &outgoingMessage{
-		bytes:    msgBytes,
-		resultCh: resultCh,
+		bytes:       msgBytes,
+		resultCh:    resultCh,
+		beforeWrite: beforeWrite,
 	}:
 		return <-resultCh
 	case <-ctx.Done():
@@ -250,6 +255,7 @@ func (c *Client) handleMessage(msgBytes []byte, msgTyp int) error {
 	if cm, ok := message.(messages.ChannelMessage); ok {
 		channelName := cm.Channel()
 		c.Lock()
+		defer c.Unlock()
 		channel, ok := c.channelsByName[channelName]
 		if !ok {
 			// The channel should have existed before, but now doesn't,
@@ -260,7 +266,6 @@ func (c *Client) handleMessage(msgBytes []byte, msgTyp int) error {
 			return nil
 		}
 		channel <- message
-		c.Unlock()
 	} else {
 		return c.acceptMessage(message)
 	}
@@ -299,12 +304,20 @@ func (c *Client) Execute(ctx context.Context, req *ExecuteRequest) (*Computation
 		req.Channel = c.newUniqueChannelName()
 	}
 
-	err := c.sendMessage(ctx, req)
+	var channel chan messages.Message
+	var computation *Computation
+	err := c.sendMessageWithBeforeWrite(ctx, req, func() {
+		channel = c.registerChannel(req.Channel)
+		computation = newComputation(channel, req.Channel, c)
+	})
 	if err != nil {
+		if channel != nil {
+			c.unregisterChannel(req.Channel, channel)
+		}
 		return nil, err
 	}
 
-	return newComputation(c.registerChannel(req.Channel), req.Channel, c), nil
+	return computation, nil
 }
 
 // Detach from a computation but keep it running.  See
@@ -338,6 +351,16 @@ func (c *Client) registerChannel(name string) chan messages.Message {
 	c.Unlock()
 
 	return ch
+}
+
+func (c *Client) unregisterChannel(name string, channel chan messages.Message) {
+	c.Lock()
+	defer c.Unlock()
+
+	if ch, ok := c.channelsByName[name]; ok && ch == channel {
+		delete(c.channelsByName, name)
+		close(ch)
+	}
 }
 
 func (c *Client) closeRegisteredChannels() {

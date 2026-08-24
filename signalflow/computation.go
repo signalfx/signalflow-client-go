@@ -200,7 +200,7 @@ func (c *Computation) processMessage(m messages.Message) error {
 		c.Unlock()
 		c.expirationChBuffer <- v
 	case *messages.InfoMessage:
-		switch v.MessageBlock.Code {
+		switch v.Code {
 		case messages.JobRunningResolution:
 			c.resolutionMS.Set(v.MessageBlock.Contents.(messages.JobRunningResolutionContents).ResolutionMS())
 		case messages.JobDetectedLag:

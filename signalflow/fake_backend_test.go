@@ -107,7 +107,7 @@ func processClient(t *testing.T, sfxClient *Client, testCase testCase, connectio
 	timestamps := []int64{}
 	datapointCount := 0
 	for msg := range data.Data() {
-		timestamps = append(timestamps, int64(msg.TimestampMillis))
+		timestamps = append(timestamps, int64(msg.TimestampMillis)) //nolint:gosec // Test timestamps are always valid Unix millisecond values.
 		datapoints := []map[string]string{}
 		for _, pl := range msg.Payloads {
 			meta, _ := data.TSIDMetadata(context.Background(), pl.TSID)

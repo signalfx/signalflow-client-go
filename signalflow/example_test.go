@@ -81,7 +81,7 @@ func Example() {
 
 	go func() {
 		for msg := range comp.Info() {
-			log.Printf("Got info message %s\n", msg.MessageBlock.ContentsRaw)
+			log.Printf("Got info message %s\n", msg.ContentsRaw)
 		}
 	}()
 

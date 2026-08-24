@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/signalfx/signalflow-client-go/v2/signalflow/messages"
 	"github.com/signalfx/signalfx-go/idtool"
 	"github.com/stretchr/testify/require"
@@ -51,6 +52,29 @@ func TestAuthenticationFlow(t *testing.T) {
 			"timezone":   "",
 		},
 	}, fakeBackend.received)
+}
+
+func TestUnknownChannelMessageDoesNotDeadlock(t *testing.T) {
+	t.Parallel()
+
+	c := &Client{channelsByName: make(map[string]chan messages.Message)}
+	err := c.handleMessage(
+		[]byte(`{"type":"control-message","channel":"missing","event":"STREAM_START"}`),
+		websocket.TextMessage,
+	)
+	require.NoError(t, err)
+
+	registered := make(chan struct{})
+	go func() {
+		c.registerChannel("registered-after-unknown-message")
+		close(registered)
+	}()
+
+	select {
+	case <-registered:
+	case <-time.After(time.Second):
+		t.Fatal("client mutex remained locked after handling an unknown channel")
+	}
 }
 
 func TestBasicComputation(t *testing.T) {

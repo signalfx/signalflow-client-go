@@ -22,10 +22,10 @@ $(TOOLS)/%: $(TOOLS_MOD_DIR)/go.mod | $(TOOLS)
 	cd $(TOOLS_MOD_DIR) && $(GO) build -o $@ $(PACKAGE)
 
 GOLANGCI_LINT = $(TOOLS)/golangci-lint
-$(TOOLS)/golangci-lint: PACKAGE=github.com/golangci/golangci-lint/cmd/golangci-lint
+$(TOOLS)/golangci-lint: PACKAGE=github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 
 MISSPELL = $(TOOLS)/misspell
-$(TOOLS)/misspell: PACKAGE=github.com/client9/misspell/cmd/misspell
+$(TOOLS)/misspell: PACKAGE=github.com/golangci/misspell/cmd/misspell
 
 .PHONY: precommit
 precommit: ## build pipeline

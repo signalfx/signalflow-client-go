@@ -37,7 +37,7 @@ func (dp *DataPayload) Value() interface{} {
 
 func (dp *DataPayload) Int64() int64 {
 	n := binary.BigEndian.Uint64(dp.Val[:])
-	return int64(n)
+	return int64(n) //nolint:gosec // The conversion preserves the protocol's signed 64-bit bit pattern.
 }
 
 func (dp *DataPayload) Float64() float64 {
@@ -60,7 +60,7 @@ type DataMessage struct {
 }
 
 func (dm *DataMessage) String() string {
-	pls := make([]map[string]interface{}, 0)
+	pls := make([]map[string]interface{}, 0, len(dm.Payloads))
 	for _, pl := range dm.Payloads {
 		pls = append(pls, map[string]interface{}{
 			"type":  pl.Type,
