@@ -98,7 +98,7 @@ type BaseJSONChannelMessage struct {
 }
 
 func (j *BaseJSONChannelMessage) String() string {
-	return string(j.BaseJSONMessage.rawMessage)
+	return string(j.rawMessage)
 }
 
 type TimestampedMessage struct {
@@ -106,7 +106,7 @@ type TimestampedMessage struct {
 }
 
 func (m *TimestampedMessage) Timestamp() time.Time {
-	return time.Unix(0, int64(m.TimestampMillis*uint64(time.Millisecond)))
+	return time.Unix(0, int64(m.TimestampMillis*uint64(time.Millisecond))) //nolint:gosec // SignalFlow timestamps fit in signed Unix nanoseconds.
 }
 
 type AuthenticatedMessage struct {

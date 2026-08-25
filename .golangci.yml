@@ -1,51 +1,22 @@
+version: "2"
 run:
   timeout: 5m
 
-linters-settings:
-  depguard:
-    rules:
-      non-tests:
-        files:
-          - "!$test"
-          - "!**/*test/*.go"
-        deny:
-          - pkg: "testing"
-          - pkg: "github.com/stretchr/testify"
-  goheader:
-    values:
-      const:
-        COMPANY: Splunk Inc.
-    template: |-
-      Copyright {{ COMPANY }}
-      SPDX-License-Identifier: Apache-2.0
-  govet:
-    disable:
-     - composites
-  gosec:
-    excludes:
-      - G404
-
 linters:
-  disable-all: true
+  default: none
   enable:
     - asciicheck
     - depguard
     - dupl
     - durationcheck
-    - errorlint
     - errname
-    - exportloopref
+    - errorlint
     - forbidigo
-    - gci
     - goconst
-    - gofmt
-    - gofumpt
     - goheader
-    - goimports
-    - gomodguard
+    - gomodguard_v2
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - makezero
@@ -57,11 +28,57 @@ linters:
     - predeclared
     - revive
     - staticcheck
-    - stylecheck
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - wastedassign
     - whitespace
+  settings:
+    depguard:
+      rules:
+        non-tests:
+          files:
+            - "!$test"
+            - "!**/*test/*.go"
+          deny:
+            - pkg: testing
+            - pkg: github.com/stretchr/testify
+    goheader:
+      values:
+        const:
+          COMPANY: Splunk Inc.
+      template: |-
+        Copyright {{ COMPANY }}
+        SPDX-License-Identifier: Apache-2.0
+    goconst:
+      ignore-tests: true
+    gosec:
+      excludes:
+        - G404
+    govet:
+      disable:
+        - composites
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

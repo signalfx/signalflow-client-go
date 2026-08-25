@@ -64,7 +64,7 @@ func (im *InfoMessage) UnmarshalJSON(raw []byte) error {
 }
 
 func (im *InfoMessage) LogicalTimestamp() time.Time {
-	return time.Unix(0, int64(im.LogicalTimestampMillis*uint64(time.Millisecond)))
+	return time.Unix(0, int64(im.LogicalTimestampMillis*uint64(time.Millisecond))) //nolint:gosec // SignalFlow timestamps fit in signed Unix nanoseconds.
 }
 
 type JobRunningResolutionContents map[string]interface{}

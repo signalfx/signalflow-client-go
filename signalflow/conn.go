@@ -33,8 +33,9 @@ type wsConn struct {
 }
 
 type outgoingMessage struct {
-	bytes    []byte
-	resultCh chan error
+	bytes       []byte
+	resultCh    chan error
+	beforeWrite func()
 }
 
 // Run keeps the connection alive and puts all incoming messages into a channel
@@ -129,6 +130,9 @@ func (c *wsConn) readAndWriteMessages(conn *websocket.Conn) error {
 		case msg, ok := <-c.OutgoingTextMsgs:
 			if !ok {
 				return nil
+			}
+			if msg.beforeWrite != nil {
+				msg.beforeWrite()
 			}
 			err := c.writeMessage(conn, msg.bytes)
 			msg.resultCh <- err
