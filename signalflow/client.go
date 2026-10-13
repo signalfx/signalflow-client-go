@@ -266,10 +266,25 @@ func (c *Client) handleMessage(msgBytes []byte, msgTyp int) error {
 			return nil
 		}
 		channel <- message
+		if isTerminalChannelMessage(message) {
+			delete(c.channelsByName, channelName)
+			close(channel)
+		}
 	} else {
 		return c.acceptMessage(message)
 	}
 	return nil
+}
+
+func isTerminalChannelMessage(message messages.Message) bool {
+	switch message.(type) {
+	case *messages.EndOfChannelControlMessage,
+		*messages.ChannelAbortControlMessage,
+		*messages.ErrorMessage:
+		return true
+	default:
+		return false
+	}
 }
 
 // acceptMessages accepts non-channel specific messages.  The only one that I

@@ -77,6 +77,139 @@ func TestUnknownChannelMessageDoesNotDeadlock(t *testing.T) {
 	}
 }
 
+func TestTerminalChannelMessagesUnregisterChannel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		message   string
+		wantError bool
+	}{
+		{
+			name:    "end of channel",
+			message: `{"type":"control-message","channel":"ch-1","event":"END_OF_CHANNEL"}`,
+		},
+		{
+			name:    "channel abort",
+			message: `{"type":"control-message","channel":"ch-1","event":"CHANNEL_ABORT"}`,
+		},
+		{
+			name:      "channel error",
+			message:   `{"type":"error","channel":"ch-1","error":400,"message":"bad program"}`,
+			wantError: true,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := &Client{channelsByName: make(map[string]chan messages.Message)}
+			channel := c.registerChannel("ch-1")
+			comp := newComputation(channel, "ch-1", c)
+
+			require.NoError(t, c.handleMessage([]byte(test.message), websocket.TextMessage))
+
+			drainChannel(comp.Data())
+			if test.wantError {
+				require.Error(t, comp.Err())
+			} else {
+				require.NoError(t, comp.Err())
+			}
+
+			c.Lock()
+			require.NotContains(t, c.channelsByName, "ch-1")
+			c.Unlock()
+		})
+	}
+}
+
+func TestNonTerminalChannelMessageRemainsRegistered(t *testing.T) {
+	t.Parallel()
+
+	c := &Client{channelsByName: make(map[string]chan messages.Message)}
+	channel := c.registerChannel("ch-1")
+
+	handled := make(chan error, 1)
+	go func() {
+		handled <- c.handleMessage(
+			[]byte(`{"type":"control-message","channel":"ch-1","event":"STREAM_START"}`),
+			websocket.TextMessage,
+		)
+	}()
+
+	message := <-channel
+	require.IsType(t, &messages.BaseControlMessage{}, message)
+	require.NoError(t, <-handled)
+
+	c.Lock()
+	require.Equal(t, channel, c.channelsByName["ch-1"])
+	c.Unlock()
+
+	c.unregisterChannel("ch-1", channel)
+}
+
+func TestCompletedComputationsDoNotAccumulateRegisteredChannels(t *testing.T) {
+	t.Parallel()
+
+	c := &Client{channelsByName: make(map[string]chan messages.Message)}
+	for i := 0; i < 100; i++ {
+		channelName := fmt.Sprintf("ch-%d", i)
+		channel := c.registerChannel(channelName)
+		comp := newComputation(channel, channelName, c)
+		message := fmt.Sprintf(
+			`{"type":"control-message","channel":%q,"event":"END_OF_CHANNEL"}`,
+			channelName,
+		)
+
+		require.NoError(t, c.handleMessage([]byte(message), websocket.TextMessage))
+		drainChannel(comp.Data())
+	}
+
+	c.Lock()
+	require.Empty(t, c.channelsByName)
+	c.Unlock()
+}
+
+func TestTerminalMessageAndChannelCloseDoNotRace(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 100; i++ {
+		c := &Client{channelsByName: make(map[string]chan messages.Message)}
+		channel := c.registerChannel("ch-1")
+
+		handled := make(chan error, 1)
+		go func() {
+			handled <- c.handleMessage(
+				[]byte(`{"type":"control-message","channel":"ch-1","event":"END_OF_CHANNEL"}`),
+				websocket.TextMessage,
+			)
+		}()
+		closed := make(chan struct{})
+		go func() {
+			c.closeRegisteredChannels()
+			close(closed)
+		}()
+
+		drainChannel(channel)
+		require.NoError(t, <-handled)
+		<-closed
+
+		c.Lock()
+		require.Empty(t, c.channelsByName)
+		c.Unlock()
+	}
+}
+
+func drainChannel[T any](channel <-chan T) {
+	for {
+		if _, ok := <-channel; !ok {
+			return
+		}
+	}
+}
+
 func TestBasicComputation(t *testing.T) {
 	t.Parallel()
 	fakeBackend := NewRunningFakeBackend()
